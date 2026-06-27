@@ -1,0 +1,63 @@
+name: book-tracker
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: booktracker-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: booktracker
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - booktracker-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: book-tracker-backend:dev
+    container_name: booktracker-backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/booktracker
+      NODE_ENV: production
+    ports:
+      - "5001:5000"
+    networks:
+      - booktracker-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5001/api
+    image: book-tracker-frontend:dev
+    container_name: booktracker-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - booktracker-net
+
+networks:
+  booktracker-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    name: booktracker-mongo-data
+    external: true
