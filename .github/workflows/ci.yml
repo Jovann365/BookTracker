@@ -13,8 +13,8 @@ concurrency:
 
 env:
   REGISTRY: docker.io
-  BACKEND_IMAGE: YOUR_DOCKERHUB_USERNAME/book-tracker-backend
-  FRONTEND_IMAGE: YOUR_DOCKERHUB_USERNAME/book-tracker-frontend
+  BACKEND_IMAGE: jovann365/book-tracker-backend
+  FRONTEND_IMAGE: jovann365/book-tracker-frontend
 
 jobs:
   build-and-push:
